@@ -7,7 +7,7 @@ variable "location" {
 }
 
 variable "acr_name" {
-  default = "phoneregistry"
+  default = "phoneregistry1"
 }
 
 variable "aks_cluster_name" {

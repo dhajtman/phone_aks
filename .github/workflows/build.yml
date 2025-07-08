@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     env:
-      ACR_NAME: phoneregistry
-      IMAGE_NAME: phone-app
+      ACR_NAME: phoneregistry1
+      IMAGE_NAME: spring-app
       CONTAINER_TAG: latest
     steps:
       # Checkout the repository
@@ -35,15 +35,19 @@ jobs:
         run: mvn clean package
 
       # Build and tag the Docker image
-      - name: Build Docker Image
-        run: |
-          docker build --platform linux/amd64 -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$CONTAINER_TAG .
+#      - name: Build Docker Image
+#        run: |
+#          docker build --platform linux/amd64 -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$CONTAINER_TAG .
 
       - name: Docker login to ACR
         run: |
           az acr login --name ${ACR_NAME}
 
       # Push the Docker image to ECR
-      - name: Push Docker Image
+#      - name: Push Docker Image
+#        run: |
+#          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$CONTAINER_TAG
+
+      - name: Build and push Docker image
         run: |
-          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$CONTAINER_TAG
+          az acr build --registry $ACR_NAME --image $IMAGE_NAME:$CONTAINER_TAG .

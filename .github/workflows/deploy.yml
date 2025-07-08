@@ -21,38 +21,29 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+      - name: Azure login
+        uses: azure/login@v1
         with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Setup Terraform Backend
-        id: backend
-        run: |
-          cat > "${TF_DIR}"/backend.tf << EOF
-          terraform {
-            backend "remote" {
-               organization = "${TF_CLOUD_ORGANIZATION}"
-          
-               workspaces {
-                 name = "${TF_CLOUD_WORKSPACE}"
-               }
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
             }
-          }
-          EOF
 
-      - name: Set custom TF vars
-        run: |
-          cat > "${TF_DIR}"/custom.auto.tfvars << EOF
-          enable_app = true
-          openai_api_key = ""
-          EOF
+      - name: Set up kubectl
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
 
-      - name: ACR Deployment
-        run: |
-          terraform -chdir=$TF_DIR init -reconfigure
-          terraform -chdir=$TF_DIR apply -auto-approve
+#      - name: Replace image tag in manifest
+#        run: |
+#          sed -i "s|image: .*/.*|image: ${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}|" k8s-aks/deployment.yml
 
-      - name: Output
+      - name: Apply K8s manifests
         run: |
-          terraform -chdir=$TF_DIR output
+          kubectl apply -f k8s-aks/deployment.yml
+          kubectl apply -f k8s-aks/service.yml
+          kubectl apply -f k8s-aks/ingress.yml
