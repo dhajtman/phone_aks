@@ -27,7 +27,7 @@ Create a Java application that returns a sorted list of phones using a REST inte
 ### Deploying app to k8s
 1. **Create KinD cluster:**
    ```bash
-   kind create cluster --config k8s/kind-cluster.yml
+   kind create cluster --config k8s-kind/kind-cluster.yml
    ```
 2. **Install Ingress Controller:**
    ```bash
@@ -35,7 +35,7 @@ Create a Java application that returns a sorted list of phones using a REST inte
    ```
 3. **Build and tag docker image:**
    ```bash
-   docker build -t telekom-app-api:1.0.0 -f k8s/Dockerfile .
+   docker build -t telekom-app-api:1.0.0 -f k8s-kind/Dockerfile .
    ```
 4. **Load Docker image into KinD:**
    ```bash
@@ -43,7 +43,7 @@ Create a Java application that returns a sorted list of phones using a REST inte
    ```
 5. **Apply Deployment, Service and Ingress configuration:**
    ```bash
-   kubectl apply -f k8s/app-deploy.yml
+   kubectl apply -f k8s-kind/app-deploy.yml
    ```
 6. **Delete KinD cluster:**
    ```bash
@@ -71,7 +71,7 @@ Create a Java application that returns a sorted list of phones using a REST inte
    ```
 5. **Deploy service account:**
    ```bash
-   kubectl apply -f k8s/service-account.yml
+   kubectl apply -f k8s-kind/service-account.yml
    ```
 6. **Generate token:**
    ```bash

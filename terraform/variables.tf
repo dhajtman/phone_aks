@@ -7,7 +7,15 @@ variable "location" {
 }
 
 variable "acr_name" {
-  default = "phoneregistry1"
+  default = "phoneregistry"
+}
+
+variable "aks_cluster_name" {
+  default = "spring-aks-cluster"
+}
+
+variable "dns_prefix" {
+  default = "springaks"
 }
 
 variable "app_name" {

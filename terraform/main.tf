@@ -1,4 +1,3 @@
-
 terraform {
   required_providers {
     azurerm = {
@@ -29,67 +28,35 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-resource "azurerm_container_app_environment" "env" {
-  name                = "phone-env"
+resource "azurerm_kubernetes_cluster" "aks" {
+  name                = var.aks_cluster_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-}
+  dns_prefix          = var.dns_prefix
 
-resource "azurerm_user_assigned_identity" "uai" {
-  name                = "phoneapp-identity"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-}
-
-resource "azurerm_role_assignment" "acr_pull" {
-  scope                = azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_user_assigned_identity.uai.principal_id
-}
-
-resource "azurerm_container_app" "app" {
-  count = var.enable_app ? 1 : 0
-
-  name                         = var.app_name
-  container_app_environment_id = azurerm_container_app_environment.env.id
-  resource_group_name          = azurerm_resource_group.main.name
-  revision_mode                = "Single"
-
-  template {
-    container {
-      name   = var.image_name
-      image  = "${azurerm_container_registry.acr.login_server}/${var.image_name}:${var.container_image_tag}"
-      cpu    = 0.5
-      memory = "1.0Gi"
-
-      env {
-        name  = "OPENAI_API_KEY"
-        value = var.openai_api_key
-      }
-    }
-  }
-
-  ingress {
-    external_enabled = true
-    target_port      = var.app_port
-    traffic_weight {
-      percentage      = 100
-      latest_revision = true
-    }
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_DS2_v2"
   }
 
   identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.uai.id]
+    type = "SystemAssigned"
   }
 
-  registry {
-    server = azurerm_container_registry.acr.login_server
-    identity = azurerm_user_assigned_identity.uai.id
+  network_profile {
+    network_plugin = "azure"
+    load_balancer_sku = "standard"
   }
 }
 
-output "container_app_url" {
-  value = var.enable_app ? "https://${azurerm_container_app.app[0].ingress[0].fqdn}/swagger-ui/index.html" : null
-  description = "Swagger UI URL of the deployed Azure Container App"
+resource "azurerm_role_assignment" "aks_acr_pull" {
+  scope                = azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
+}
+
+output "kube_config" {
+  value = azurerm_kubernetes_cluster.aks.kube_config_raw
+  sensitive = true
 }
