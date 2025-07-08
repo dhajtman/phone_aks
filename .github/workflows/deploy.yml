@@ -15,6 +15,8 @@ jobs:
       TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
       TF_CLOUD_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
       TF_CLOUD_SKIP_REMOTE_EXECUTION: true
+      CLUSTER_NAME: spring-aks-cluster
+      RESOURCE_GROUP: phone-aks-rg
 
     steps:
       # Checkout the repository
@@ -35,8 +37,8 @@ jobs:
       - name: Set up kubectl
         uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ env.RESOURCE_GROUP }}
-          cluster-name: ${{ env.CLUSTER_NAME }}
+          resource-group: ${RESOURCE_GROUP}
+          cluster-name: ${CLUSTER_NAME }
 
 #      - name: Replace image tag in manifest
 #        run: |
