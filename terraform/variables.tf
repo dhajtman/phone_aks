@@ -1,5 +1,5 @@
 variable "resource_group_name" {
-  default = "phone-az-rg"
+  default = "phone-aks-rg"
 }
 
 variable "location" {
