@@ -17,6 +17,7 @@ jobs:
       TF_CLOUD_SKIP_REMOTE_EXECUTION: true
       CLUSTER_NAME: spring-aks-cluster
       RESOURCE_GROUP: phone-aks-rg
+      ACR_NAME: phoneregistry1
 
     steps:
       # Checkout the repository
@@ -43,6 +44,9 @@ jobs:
 #      - name: Replace image tag in manifest
 #        run: |
 #          sed -i "s|image: .*/.*|image: ${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}|" k8s-aks/deployment.yml
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name $ACR_NAME
 
       - name: Apply K8s manifests
         run: |
