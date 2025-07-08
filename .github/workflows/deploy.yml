@@ -53,3 +53,4 @@ jobs:
           kubectl apply -f k8s-aks/deployment.yml
           kubectl apply -f k8s-aks/service.yml
           kubectl apply -f k8s-aks/ingress.yml
+          kubectl rollout restart deployment spring-app
